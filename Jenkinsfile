@@ -1,13 +1,13 @@
 pipeline {
 agent any
 environment {
-ANSIBLE_INVENTORY = 'path/to/your/inventory/file'
-ANSIBLE_PLAYBOOK = 'path/to/your/playbook.yml'
+ANSIBLE_INVENTORY = 'inventory.ini'
+ANSIBLE_PLAYBOOK = 'playbook.yml'
     }
 stages {
 stage('Checkout') {
 steps {
-git branch: 'main', url: 'https://github.com/your-repo/your-project.git'
+git branch: 'main', url: 'https://github.com/souma406/Spring-Boot_jenkins.git'
 }
 }
 stage('Install Ansible') {
