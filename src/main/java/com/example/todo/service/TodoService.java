@@ -1,45 +1,58 @@
 package com.example.todo.service;
 
 import com.example.todo.model.Todo;
+import com.example.todo.repository.TodoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Transactional
+@SuppressWarnings("null")
 public class TodoService {
     
-    private final ConcurrentHashMap<String, Todo> todos = new ConcurrentHashMap<>();
+    private final TodoRepository todoRepository;
     
-    public List<Todo> getAllTodos() {
-        return new ArrayList<>(todos.values());
+    public TodoService(TodoRepository todoRepository) {
+        this.todoRepository = todoRepository;
     }
     
+    @Transactional(readOnly = true)
+    public List<Todo> getAllTodos() {
+        return todoRepository.findAll();
+    }
+    
+    @Transactional(readOnly = true)
     public Optional<Todo> getTodoById(String id) {
-        return Optional.ofNullable(todos.get(id));
+        return todoRepository.findById(id);
     }
     
     public Todo createTodo(Todo todo) {
-        todos.put(todo.getId(), todo);
-        return todo;
+        return todoRepository.save(todo);
     }
     
     public Optional<Todo> updateTodo(String id, Todo updatedTodo) {
-        return Optional.ofNullable(todos.computeIfPresent(id, (key, existing) -> {
-            existing.setTitle(updatedTodo.getTitle());
-            existing.setDescription(updatedTodo.getDescription());
-            existing.setCompleted(updatedTodo.isCompleted());
-            return existing;
-        }));
+        return todoRepository.findById(id)
+                .map(existing -> {
+                    existing.setTitle(updatedTodo.getTitle());
+                    existing.setDescription(updatedTodo.getDescription());
+                    existing.setCompleted(updatedTodo.isCompleted());
+                    return todoRepository.save(existing);
+                });
     }
     
     public boolean deleteTodo(String id) {
-        return todos.remove(id) != null;
+        return todoRepository.findById(id)
+                .map(todo -> {
+                    todoRepository.delete(todo);
+                    return true;
+                })
+                .orElse(false);
     }
     
     public void deleteAllTodos() {
-        todos.clear();
+        todoRepository.deleteAll();
     }
 }

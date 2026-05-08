@@ -1,23 +1,46 @@
 package com.example.todo.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Entity
 public class Todo {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     
     @NotBlank(message = "Le titre est obligatoire")
+    @Column(nullable = false)
     private String title;
     
+    @Column(length = 500)
     private String description;
-    private boolean completed;
+    
+    @Column(nullable = false)
+    private boolean completed = false;
+    
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
     public Todo() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = LocalDateTime.now();
-        this.completed = false;
+    }
+    
+    @PrePersist
+    protected void onCreate() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString();
+        }
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
     
     public Todo(String title, String description) {
